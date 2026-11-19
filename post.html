@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block mainclass %}wide{% endblock %}
+{% block content %}
+<div class="card">
+  <h1>Post a problem</h1>
+  <form method="post" enctype="multipart/form-data" id="pform">
+    <label for="type_id">Problem type</label>
+    <select id="type_id" name="type_id" required>
+      <option value="">Select type</option>
+      {% for t in types %}
+        <option value="{{ t.id }}" {% if form.get('type_id') == t.id|string %}selected{% endif %}>{{ t.name }}</option>
+      {% endfor %}
+    </select>
+
+    <label for="title">Title</label>
+    <input type="text" id="title" name="title" maxlength="100" required
+           placeholder="e.g. Water cooler not working in Block B"
+           value="{{ form.get('title', '') }}">
+
+    <label for="description">Describe the problem</label>
+    <textarea id="description" name="description" maxlength="1000" required
+              placeholder="What happened, where, and since when?">{{ form.get('description', '') }}</textarea>
+
+    <label for="images">Photos <span class="opt">(optional, up to {{ max_images }}, {{ max_image_mb }} MB each)</span></label>
+    <input type="file" id="images" name="images" accept="image/*" multiple>
+
+    <label for="video">Video <span class="opt">(optional, 1 video, {{ max_video_mb }} MB max)</span></label>
+    <input type="file" id="video" name="video" accept="video/mp4,video/webm,video/quicktime">
+
+    <fieldset>
+      <legend>Who can see this problem?</legend>
+      <label class="choice">
+        <input type="radio" name="visibility" value="public"
+               {% if form.get('visibility', 'public') == 'public' %}checked{% endif %}>
+        <span><strong>Public</strong><small>All registered students can see it, like and comment.</small></span>
+      </label>
+      <label class="choice">
+        <input type="radio" name="visibility" value="private"
+               {% if form.get('visibility') == 'private' %}checked{% endif %}>
+        <span><strong>Private</strong><small>Only faculty and the responsible staff can see it.</small></span>
+      </label>
+    </fieldset>
+
+    <label class="choice">
+      <input type="checkbox" name="anonymous" value="1" {% if form.get('anonymous') %}checked{% endif %}>
+      <span><strong>Post anonymously</strong><small>Your name will not be shown to other users.</small></span>
+    </label>
+
+    <p class="err" id="clientErr"></p>
+    <button type="submit" class="btn">Submit problem</button>
+  </form>
+</div>
+
+<script>
+  document.getElementById("pform").addEventListener("submit", function (e) {
+    var imgs = document.getElementById("images").files;
+    var vid = document.getElementById("video").files;
+    var msg = "";
+    if (imgs.length > {{ max_images }}) msg = "You can upload at most {{ max_images }} photos.";
+    for (var i = 0; i < imgs.length && !msg; i++) {
+      if (imgs[i].size > {{ max_image_mb }} * 1024 * 1024) msg = "Each photo must be under {{ max_image_mb }} MB.";
+    }
+    if (!msg && vid.length && vid[0].size > {{ max_video_mb }} * 1024 * 1024) {
+      msg = "Video must be under {{ max_video_mb }} MB.";
+    }
+    if (msg) {
+      e.preventDefault();
+      document.getElementById("clientErr").textContent = msg;
+    }
+  });
+</script>
+{% endblock %}

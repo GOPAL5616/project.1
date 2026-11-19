@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block mainclass %}wide{% endblock %}
+{% block content %}
+<div class="bar">
+  <h1 class="pagetitle">Types &amp; departments</h1>
+  <a class="btn small alt" href="{{ url_for('admin_users') }}">Manage users</a>
+</div>
+
+<div class="card">
+  <h2 class="subtitle">Problem types and who handles them</h2>
+  <p class="note left">To give a type (Bus, Canteen...) to a particular person, open Users, then Manage on that Admin or Principal. Once a person is assigned, only that person can see and solve its private problems.</p>
+  {% for t in types %}
+  <div class="comment">
+    <strong>{{ t.name }}</strong> <span class="meta">&middot; {{ t.used }} problem(s)</span>
+    {% if t.handled_by != 'hod' %}<div class="meta">Assigned to: {% if names.get(t.id) %}<strong>{{ names[t.id]|join(', ') }}</strong>{% else %}nobody (follows the role below){% endif %}</div>{% endif %}
+    <form method="post" action="{{ url_for('admin_route_type', tid=t.id) }}" class="inline">
+      <select name="handled_by" aria-label="Handled by {{ t.name }}">
+        <option value="hod" {% if t.handled_by == 'hod' %}selected{% endif %}>HOD of student's department</option>
+        <option value="admin" {% if t.handled_by == 'admin' %}selected{% endif %}>Admin</option>
+        <option value="principal" {% if t.handled_by == 'principal' %}selected{% endif %}>Principal</option>
+      </select>
+      <button type="submit" class="btn small">Save</button>
+    </form>
+    {% if t.used == 0 %}
+    <form method="post" action="{{ url_for('admin_delete_type', tid=t.id) }}" class="inline">
+      <button type="submit" class="btn small alt">Delete type</button>
+    </form>
+    {% endif %}
+  </div>
+  {% endfor %}
+
+  <form method="post" action="{{ url_for('admin_add_type') }}">
+    <label for="t_name">Add new problem type</label>
+    <input type="text" id="t_name" name="name" maxlength="30" placeholder="e.g. Sports" required>
+    <label for="t_by">Handled by</label>
+    <select id="t_by" name="handled_by">
+      <option value="admin">Admin</option>
+      <option value="principal">Principal</option>
+      <option value="hod">HOD of student's department</option>
+    </select>
+    <button type="submit" class="btn">Add type</button>
+  </form>
+</div>
+
+<div class="card">
+  <h2 class="subtitle">Departments</h2>
+  <p class="meta">{% for d in departments %}{{ d.name }}{% if not loop.last %} &middot; {% endif %}{% endfor %}</p>
+  <form method="post" action="{{ url_for('admin_add_department') }}">
+    <label for="d_name">Add new department</label>
+    <input type="text" id="d_name" name="name" maxlength="60" required>
+    <button type="submit" class="btn">Add department</button>
+  </form>
+</div>
+{% endblock %}

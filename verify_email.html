@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card">
+  <h1>Verify your email</h1>
+  <p class="note left">We sent a 6-digit code to <strong>{{ email }}</strong>. It is valid for 10 minutes.</p>
+  {% if test_mode %}<p class="msg bad">Test mode: email service is not set up, so the code is shown in the server terminal.</p>{% endif %}
+  <form method="post">
+    <label for="code">Verification code</label>
+    <input type="text" id="code" name="code" inputmode="numeric" maxlength="6" pattern="[0-9]{6}" autocomplete="one-time-code" required>
+    <button type="submit" class="btn">Verify and create account</button>
+  </form>
+  <form method="post" action="{{ url_for('resend_otp') }}">
+    <button type="submit" class="btn alt" style="margin-top:10px">Send new code</button>
+  </form>
+  <p class="note"><a href="{{ url_for('register') }}">Use a different email</a></p>
+</div>
+{% endblock %}

@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card">
+  <h1>Student Register</h1>
+  <form method="post">
+    <label for="name">Full name</label>
+    <input type="text" id="name" name="name" required>
+
+    <label for="email">Gmail address</label>
+    <input type="email" id="email" name="email" placeholder="you@gmail.com" required>
+
+    <label for="department">Department</label>
+    <select id="department" name="department" required>
+      <option value="">Select department</option>
+      {% for d in departments %}
+        <option value="{{ d.id }}">{{ d.name }}</option>
+      {% endfor %}
+    </select>
+
+    <label for="password">Password</label>
+    <input type="password" id="password" name="password" minlength="6" required>
+
+    <label for="confirm">Confirm password</label>
+    <input type="password" id="confirm" name="confirm" required>
+
+    <button type="submit" class="btn">Create account</button>
+  </form>
+  <p class="note">Already registered? <a href="{{ url_for('login') }}">Log in</a></p>
+</div>
+{% endblock %}

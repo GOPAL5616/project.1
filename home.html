@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card">
+  <h1>Welcome, {{ session.name }}</h1>
+  <p>You are logged in as <strong>{{ session.role }}</strong>.</p>
+  <div class="actions">
+    {% if session.role == 'student' %}
+      <a class="btn" href="{{ url_for('post_problem') }}">Post a problem</a>
+      <a class="btn alt" href="{{ url_for('my_problems') }}">My problems</a>
+    {% endif %}
+    {% if session.role in ('faculty', 'hod', 'admin', 'principal', 'superadmin') %}
+      <a class="btn" href="{{ url_for('dashboard') }}">Dashboard (problems to solve)</a>
+    {% endif %}
+    {% if session.role == 'superadmin' %}
+      <a class="btn alt" href="{{ url_for('admin_users') }}">Manage users</a>
+      <a class="btn alt" href="{{ url_for('admin_settings') }}">Problem types &amp; departments</a>
+    {% endif %}
+    <a class="btn alt" href="{{ url_for('feed') }}">Public feed</a>
+  </div>
+</div>
+{% endblock %}

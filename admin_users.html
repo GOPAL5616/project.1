@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% block mainclass %}wide{% endblock %}
+{% block content %}
+<div class="bar">
+  <h1 class="pagetitle">Manage users</h1>
+  <a class="btn small alt" href="{{ url_for('admin_settings') }}">Types &amp; departments</a>
+</div>
+
+{% if reqs %}
+<div class="card">
+  <h2 class="subtitle">Password reset requests ({{ reqs|length }})</h2>
+  {% for r in reqs %}
+  <div class="comment">
+    <strong>{{ r.name }}</strong> <span class="meta">&middot; {{ r.email }} &middot; {{ r.created_at[:16] }}</span>
+    <form method="post" action="{{ url_for('admin_reset_password', uid=r.uid) }}" class="inline">
+      <input type="text" name="password" minlength="6" placeholder="Temporary password" autocomplete="off" required>
+      <button type="submit" class="btn small">Set password</button>
+    </form>
+  </div>
+  {% endfor %}
+  <p class="note left">Tell the person this temporary password. They must change it after login.</p>
+</div>
+{% endif %}
+
+<div class="card">
+  <h2 class="subtitle">Add staff account</h2>
+  <form method="post" action="{{ url_for('admin_add_user') }}">
+    <label for="a_name">Full name</label>
+    <input type="text" id="a_name" name="name" required>
+    <label for="a_email">Email</label>
+    <input type="email" id="a_email" name="email" required>
+    <label for="a_role">Role</label>
+    <select id="a_role" name="role" required>
+      <option value="">Select role</option>
+      <option value="faculty">Faculty</option>
+      <option value="hod">HOD</option>
+      <option value="admin">Admin</option>
+      <option value="principal">Principal</option>
+    </select>
+    <label for="a_dept">Department <span class="opt">(needed for Faculty and HOD)</span></label>
+    <select id="a_dept" name="department">
+      <option value="">None</option>
+      {% for d in departments %}<option value="{{ d.id }}">{{ d.name }}</option>{% endfor %}
+    </select>
+    <label for="a_pw">Temporary password</label>
+    <input type="text" id="a_pw" name="password" minlength="6" autocomplete="off" required>
+    <button type="submit" class="btn">Create account</button>
+  </form>
+  <p class="note left">Give this password to the staff member. They must change it at first login.</p>
+</div>
+
+<div class="chips">
+  {% for key, label in [('staff','Staff'),('student','Students'),('faculty','Faculty'),('hod','HOD'),('admin','Admin'),('principal','Principal'),('all','All')] %}
+    <a class="chip {% if selected == key %}on{% endif %}" href="{{ url_for('admin_users', role=key) }}">{{ label }}</a>
+  {% endfor %}
+</div>
+
+{% for u in users %}
+<div class="card user">
+  <div class="tags">
+    <strong>{{ u.name }}</strong>
+    <span class="tag">{{ labels[u.role] }}</span>
+    {% if not u.is_active %}<span class="status s-pending">Deactivated</span>{% endif %}
+    {% if u.must_change_password %}<span class="code">Temp password</span>{% endif %}
+  </div>
+  <div class="meta">{{ u.email }}{% if u.dept_name %} &middot; {{ u.dept_name }}{% endif %}</div>
+  {% if u.role in ('admin', 'principal') %}
+    <div class="meta">Handles: {% if assigned_names.get(u.id) %}<strong>{{ assigned_names[u.id]|join(', ') }}</strong>{% else %}no type given yet{% endif %}</div>
+  {% endif %}
+
+  {% if u.role != 'superadmin' %}
+  <details>
+    <summary>Manage</summary>
+    {% if u.role in ('admin', 'principal') %}
+    <form method="post" action="{{ url_for('admin_set_user_types', uid=u.id) }}">
+      <label>Problem types this person solves</label>
+      {% for t in college_types %}
+        <label class="check"><input type="checkbox" name="type_ids" value="{{ t.id }}" {% if t.id in assigned_ids.get(u.id, []) %}checked{% endif %}> {{ t.name }}</label>
+      {% endfor %}
+      <button type="submit" class="btn small" style="margin-top:10px">Save problem types</button>
+    </form>
+    {% endif %}
+    <form method="post" action="{{ url_for('admin_update_user', uid=u.id) }}">
+      <label>Role
+        <select name="role">
+          {% for r in roles %}<option value="{{ r }}" {% if r == u.role %}selected{% endif %}>{{ labels[r] }}</option>{% endfor %}
+        </select>
+      </label>
+      <label>Department
+        <select name="department">
+          <option value="">None</option>
+          {% for d in departments %}<option value="{{ d.id }}" {% if d.id == u.department_id %}selected{% endif %}>{{ d.name }}</option>{% endfor %}
+        </select>
+      </label>
+      <button type="submit" class="btn small" style="margin-top:10px">Save role</button>
+    </form>
+    <form method="post" action="{{ url_for('admin_reset_password', uid=u.id) }}">
+      <label>New temporary password
+        <input type="text" name="password" minlength="6" autocomplete="off" required>
+      </label>
+      <button type="submit" class="btn small alt" style="margin-top:10px">Reset password</button>
+    </form>
+    <form method="post" action="{{ url_for('admin_toggle_user', uid=u.id) }}">
+      <button type="submit" class="btn small alt" style="margin-top:10px">{{ 'Deactivate' if u.is_active else 'Activate' }} account</button>
+    </form>
+  </details>
+  {% endif %}
+</div>
+{% else %}
+<div class="card"><p class="note">No users here.</p></div>
+{% endfor %}
+{% endblock %}

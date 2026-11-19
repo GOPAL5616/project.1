@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% from "macros.html" import card with context %}
+{% block mainclass %}wide{% endblock %}
+{% block content %}
+<h1 class="pagetitle">Public feed</h1>
+<div class="chips">
+  <a class="chip {% if not selected %}on{% endif %}" href="{{ url_for('feed') }}">All</a>
+  {% for t in types %}
+    <a class="chip {% if selected == t.name %}on{% endif %}" href="{{ url_for('feed', type=t.name) }}">{{ t.name }}</a>
+  {% endfor %}
+</div>
+
+{% for p in problems %}
+  {{ card(p) }}
+{% else %}
+  <div class="card"><p class="note">No public problems yet.</p></div>
+{% endfor %}
+{% endblock %}

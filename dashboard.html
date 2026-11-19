@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% from "macros.html" import card with context %}
+{% block mainclass %}wide{% endblock %}
+{% block content %}
+<h1 class="pagetitle">Dashboard</h1>
+<p class="note left" style="margin:0 0 12px">{{ scope_text }}</p>
+
+<div class="stats">
+  {% for s in statuses %}
+    <a class="stat s-{{ s|replace(' ', '-')|lower }}" href="{{ url_for('dashboard', status=s) }}">
+      <strong>{{ counts[s] }}</strong><span>{{ s }}</span>
+    </a>
+  {% endfor %}
+</div>
+
+<div class="chips">
+  <a class="chip {% if selected == 'open' %}on{% endif %}" href="{{ url_for('dashboard', status='open') }}">Open</a>
+  {% for s in statuses %}
+    <a class="chip {% if selected == s %}on{% endif %}" href="{{ url_for('dashboard', status=s) }}">{{ s }}</a>
+  {% endfor %}
+  <a class="chip {% if selected == 'all' %}on{% endif %}" href="{{ url_for('dashboard', status='all') }}">All</a>
+</div>
+
+{% for p in problems %}
+  {{ card(p, True) }}
+{% else %}
+  <div class="card"><p class="note">No problems here.</p></div>
+{% endfor %}
+{% endblock %}

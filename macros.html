@@ -1,0 +1,20 @@
+{% macro card(p, show_visibility=False) %}
+<a class="problem" href="{{ url_for('problem_detail', code=p.problem_code) }}">
+  {% if p.thumb_id %}
+    <img class="thumb" src="{{ url_for('media', media_id=p.thumb_id) }}" alt="" loading="lazy">
+  {% endif %}
+  <div class="pbody">
+    <div class="tags">
+      <span class="tag">{{ p.type_name }}</span>
+      <span class="code">{{ p.problem_code }}</span>
+      {% if show_visibility %}<span class="badge {{ p.visibility }}">{{ p.visibility|capitalize }}</span>{% endif %}
+      {% if p.view_only %}<span class="code">View only</span>{% endif %}
+      <span class="status s-{{ p.status|replace(' ', '-')|lower }}">{{ p.status }}</span>
+    </div>
+    <h3>{{ p.title }}</h3>
+    <p class="snippet">{{ p.description[:140] }}{% if p.description|length > 140 %}...{% endif %}</p>
+    <div class="counts">&#128077; {{ p.like_count }} &middot; &#129309; {{ p.relatable_count }} &middot; &#128172; {{ p.comment_count }}</div>
+    <div class="meta">{{ p.author }}{% if p.dept_name %} &middot; {{ p.dept_name }}{% endif %} &middot; {{ p.created_at[:16] }}</div>
+  </div>
+</a>
+{% endmacro %}

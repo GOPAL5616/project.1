@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block mainclass %}wide{% endblock %}
+{% block content %}
+<div class="card">
+  <div class="tags">
+    <span class="tag">{{ p.type_name }}</span>
+    <span class="code">{{ p.problem_code }}</span>
+    <span class="badge {{ p.visibility }}">{{ p.visibility|capitalize }}</span>
+    <span class="status s-{{ p.status|replace(' ', '-')|lower }}">{{ p.status }}</span>
+  </div>
+  <h1>{{ p.title }}</h1>
+  <div class="meta">{{ p.author }}{% if p.dept_name %} &middot; {{ p.dept_name }}{% endif %} &middot; {{ p.created_at[:16] }}</div>
+
+  <p class="desc">{{ p.description }}</p>
+
+  {% if media %}
+  <div class="media-grid">
+    {% for m in media %}
+      {% if m.media_type == 'image' %}
+        <a href="{{ url_for('media', media_id=m.id) }}" target="_blank" rel="noopener">
+          <img src="{{ url_for('media', media_id=m.id) }}" alt="Problem photo">
+        </a>
+      {% else %}
+        <video controls preload="metadata" src="{{ url_for('media', media_id=m.id) }}"></video>
+      {% endif %}
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% if updater %}<p class="note left">Status last changed by {{ updater }}{% if p.status_updated_at %} on {{ p.status_updated_at[:16] }}{% endif %}.</p>{% endif %}
+
+  {% if can_manage %}
+  <form method="post" action="{{ url_for('update_status', code=p.problem_code) }}" class="manage">
+    <label for="remark">Staff action <span class="opt">(optional remark, shown as a comment)</span></label>
+    <textarea id="remark" name="remark" maxlength="500" style="min-height:70px"></textarea>
+    <div class="reactions">
+      {% for s in statuses %}
+        <button type="submit" name="status" value="{{ s }}" class="react {% if p.status == s %}on{% endif %}" {% if p.status == s %}disabled{% endif %}>Mark {{ s }}</button>
+      {% endfor %}
+    </div>
+  </form>
+  {% endif %}
+
+  <div class="reactions" id="react">
+    <form method="post" action="{{ url_for('like_problem', code=p.problem_code) }}">
+      <button type="submit" class="react {% if liked %}on{% endif %}" aria-pressed="{{ 'true' if liked else 'false' }}">&#128077; Like &middot; {{ p.like_count }}</button>
+    </form>
+    <form method="post" action="{{ url_for('relatable_problem', code=p.problem_code) }}">
+      <button type="submit" class="react {% if relatable %}on{% endif %}" aria-pressed="{{ 'true' if relatable else 'false' }}">&#129309; Relatable &middot; {{ p.relatable_count }}</button>
+    </form>
+  </div>
+  <p class="note left">&ldquo;Relatable&rdquo; means you face the same problem too.</p>
+  <p class="note"><a href="{{ url_for('feed') }}">Back to public feed</a></p>
+</div>
+
+<div class="card" id="comments">
+  <h2 class="subtitle">Comments ({{ comments|length }})</h2>
+  {% for c in comments %}
+    <div class="comment">
+      <div class="cmeta"><strong>{{ c.who }}</strong>{% if c.staff %} <span class="tag">Staff</span>{% endif %} &middot; {{ c.created_at[:16] }}</div>
+      <p>{{ c.body }}</p>
+    </div>
+  {% else %}
+    <p class="note left">No comments yet. Be the first.</p>
+  {% endfor %}
+  <form method="post" action="{{ url_for('add_comment', code=p.problem_code) }}">
+    <label for="body">Add a comment</label>
+    <textarea id="body" name="body" maxlength="500" style="min-height:80px" required></textarea>
+    <button class="btn small" style="margin-top:10px" type="submit">Post comment</button>
+  </form>
+</div>
+{% endblock %}

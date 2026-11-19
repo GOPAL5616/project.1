@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% from "macros.html" import card with context %}
+{% block mainclass %}wide{% endblock %}
+{% block content %}
+<div class="bar">
+  <h1 class="pagetitle">My problems</h1>
+  <a class="btn small" href="{{ url_for('post_problem') }}">Post a problem</a>
+</div>
+
+{% for p in problems %}
+  {{ card(p, True) }}
+{% else %}
+  <div class="card"><p class="note">You have not posted any problem yet.</p></div>
+{% endfor %}
+{% endblock %}
